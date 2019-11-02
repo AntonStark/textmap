@@ -123,3 +123,35 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'fmt': {
+            'format': '%(asctime)s %(funcName)s : %(message)s',
+            'style': '%',
+        },
+    },
+    'handlers': {
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'formatter': 'fmt',
+            'filename': '/var/log/textmap_server/errors.log',
+        },
+        'debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'formatter': 'fmt',
+            'filename': '/var/log/textmap_server/debug.log',
+        },
+    },
+    'loggers': {
+        'core': {
+            'handlers': ['debug_file', 'error_file'],
+            'propagate': True,
+            'level': 'DEBUG'
+        },
+    }
+}
