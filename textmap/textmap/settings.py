@@ -25,7 +25,7 @@ SECRET_KEY = '4(#8jc9j03jv5mrp)$1_oame0!#ii)(-+pm+szw9@!49%mez+y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -104,6 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'auth.User'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -123,6 +125,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+MEDIA_ROOT = '/var/www/textmap/media/'
+
+MEDIA_URL = ''
+
 
 LOGGING = {
     'version': 1,
