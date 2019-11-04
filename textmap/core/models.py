@@ -9,8 +9,8 @@ class Text(models.Model):
     Main object ro store information about individual text
     """
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    root_uid = models.OneToOneField('Part', related_name='+', null=True, default=None,
-                                    on_delete=models.SET_NULL, editable=False)
+    root_part = models.OneToOneField('Part', related_name='+', null=True, default=None,
+                                     on_delete=models.SET_NULL, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False)
 
     name = models.TextField(blank=False, null=False)
@@ -26,6 +26,11 @@ class Text(models.Model):
     def __str__(self):
         return f'{self.created.strftime("%H:%M:%S %d/%m/%Y")} - {self.name}'
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.root_uid = Part.objects.create(text=self)
+        super(Text, self).save(*args, **kwargs)
+
 
 class Part(models.Model):
     """
@@ -33,7 +38,8 @@ class Part(models.Model):
     """
     id = models.BigAutoField(primary_key=True)
     text = models.ForeignKey(Text, on_delete=models.CASCADE)
-    parent_id = models.ForeignKey('self', on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE,
+                               null=True, default=None)
 
     subtitle = models.TextField(blank=True, null=False, default='')
 
