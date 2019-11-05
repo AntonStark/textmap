@@ -5,7 +5,9 @@ from core import views
 
 urlpatterns = [
     path('', views.user_home, name='user_home'),
+    path('text/<str:text_id>', views.text_info, name='text_info'),
 
-    path('text_paragraphs/<str:text_id>', api_views.get_paragraphs),
-    path('text/<str:text_id>', views.get_text),
+    path('parse_text/<str:text_id>', api_views.parse_text, name='parse_text'),
+
+    path('get_parts/<str:text_id>', api_views.get_parts, name='get_parts'),
 ]

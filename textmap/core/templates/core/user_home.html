@@ -5,6 +5,11 @@
     <title>Textmap home</title>
 </head>
 <body>
-<p>{{ user.username }}</p>
+<h2>Texts of <i>{{ user.username }}</i>:</h2>
+<ul>
+    {% for text in texts %}
+        <li><a href="/textmap/text/{{ text.uid }}">{{ text.name }}</a></li>
+    {% endfor %}
+</ul>
 </body>
 </html>
