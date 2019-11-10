@@ -11,8 +11,8 @@
 <div>
     <h2>Structure:</h2>
     <ul>
-        {% for part in parts %}
-            <li><a href="/textmap/part/{{ part.id }}">{{ part.id }}</a></li>
+        {% for section in sections %}
+            <li><a href="/textmap/section/{{ section.uid }}">{{ section.uid }}</a></li>
         {% endfor %}
     </ul>
 </div>

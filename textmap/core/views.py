@@ -2,7 +2,7 @@ import logging
 from django.shortcuts import render, Http404
 from django.contrib.auth.decorators import login_required
 
-from core.models import Text, Part, Paragraph
+from core.models import Text, Section
 
 log = logging.getLogger(__name__)
 
@@ -23,19 +23,19 @@ def text_info(request, text_id):
         text = Text.objects.get(uid=text_id)
     except Text.DoesNotExist:
         raise Http404
-    parts = Part.objects.filter(text__uid=text.uid)
+    sections = text.collect_sections()
 
-    context = {'text': text, 'parts': parts}
+    context = {'text': text, 'sections': sections}
     return render(request, 'core/text_info.html', context=context)
 
 
-def part_view(request, part_id):
+def section_view(request, section_uid):
     try:
-        part = Part.objects.get(id=part_id)
-    except Part.DoesNotExist:
+        section = Section.objects.get(uid=section_uid)
+    except Section.DoesNotExist:
         raise Http404
-    text = part.text
-    paragraph_list = Paragraph.objects.filter(part__id=part_id).order_by('serial_number')
+    text = section.text
+    paragraph_list = section.collect_paragraphs()
 
     context = {'text': text, 'paragraph_list': paragraph_list}
-    return render(request, 'core/part_view.html', context=context)
+    return render(request, 'core/section_view.html', context=context)

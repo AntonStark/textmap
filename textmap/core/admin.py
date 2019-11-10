@@ -10,7 +10,7 @@ class AdminText(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(models.Part)
+@admin.register(models.Section)
 class AdminPart(admin.ModelAdmin):
     pass
 

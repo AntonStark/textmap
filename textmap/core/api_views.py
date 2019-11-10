@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from rest_framework.decorators import api_view
 
-from core.models import Part, Text
+from core.models import Section, Text
 from core.views import log
 
 
@@ -25,28 +25,28 @@ def parse_text(_, text_id):
 # PART
 
 @api_view(['GET'])
-def text_parts(_, text_uid):
+def text_sections(_, text_uid):
     """
-    Observe all parts of text
+    Observe all section of text
 
     :param text_uid: uid of text to observe
-    :return: JsonResponse in form {text_uid, parts: [{id, parent}, ]}
+    :return: JsonResponse in form {text_uid, sections: [{id, parent}, ]}
     """
     log.debug(f'start, text_uid={text_uid}')
-    parts = Part.build_json(Part.objects.filter(text__uid=text_uid))
+    parts = Section.build_json(Section.of_text(text_uid))
     log.debug(f'done, text_uid={text_uid}')
-    return JsonResponse({'text_uid': text_uid, 'parts': parts}, status=200)
+    return JsonResponse({'text_uid': text_uid, 'sections': parts}, status=200)
 
 
 @api_view(['GET'])
-def sub_parts(_, part_id):
+def sub_sections(_, section_uid):
     """
-    Observe sub-parts of given part
+    Observe sub-sections of given part
 
-    :param part_id: id of part to observe
-    :return: JsonResponse in form {text_uid, parts: [{id, parent}, ]}
+    :param section_uid: id of part to observe
+    :return: JsonResponse in form {section_id, sections: [{id, parent}, ]}
     """
-    log.debug(f'start, part_id={part_id}')
-    parts = Part.build_json(Part.objects.filter(parent__id=part_id))
-    log.debug(f'done, part_id={part_id}')
-    return JsonResponse({'part_id': part_id, 'parts': parts}, status=200)
+    log.debug(f'start, part_id={section_uid}')
+    parts = Section.build_json(Section.of_section(section_uid))
+    log.debug(f'done, part_id={section_uid}')
+    return JsonResponse({'section_id': section_uid, 'sections': parts}, status=200)
