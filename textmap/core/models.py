@@ -73,6 +73,8 @@ class Paragraph(models.Model):
                                 on_delete=models.SET_NULL, null=True, default=None)
     next = models.OneToOneField('self', related_name='+',
                                 on_delete=models.SET_NULL, null=True, default=None)
+
+    serial_number = models.IntegerField(null=True, default=None)
     raw_sentences = models.TextField(blank=True, null=False, default='')
     sentence_ids = fields.ArrayField(models.BigIntegerField(), null=True)
 
@@ -84,9 +86,13 @@ class Paragraph(models.Model):
     def save_sequence(seq, part: Part, after: 'Paragraph' = None):
         prev = after
         for s in seq:
-            created = Paragraph.objects.create(part=part, prev=prev, raw_sentences=s)
+            serial = prev.serial_number + 1 if prev else 0
+            created = Paragraph.objects.create(part=part, prev=prev,
+                                               serial_number=serial, raw_sentences=s)
             if prev:
                 prev.set_next(created)
+            # we touch each Paragraph two times: on create and to set next
+            # it's more elegant to generate uid for next while before save current
             prev = created
 
 

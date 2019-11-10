@@ -2,13 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Text view</title>
+    <title>Textmap - {{ text.name }}</title>
 </head>
 <body>
-<h2>{{ text.name }}</h2>
-<div>
-    <p>Structure will be here... sometimes</p>
-</div>
+<h1>{{ text.name }}</h1>
 <a href="/textmap/parse_text/{{ text.uid }}">Пересканировать файл</a>
+
+<div>
+    <h2>Structure:</h2>
+    <ul>
+        {% for part in parts %}
+            <li><a href="/textmap/part/{{ part.id }}">{{ part.id }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
 </body>
 </html>

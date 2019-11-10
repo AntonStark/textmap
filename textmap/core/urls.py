@@ -6,6 +6,7 @@ from core import views
 urlpatterns = [
     path('', views.user_home, name='user_home'),
     path('text/<str:text_id>', views.text_info, name='text_info'),
+    path('part/<int:part_id>', views.part_view, name='part_view'),
 
     path('parse_text/<str:text_id>', api_views.parse_text, name='parse_text'),
 

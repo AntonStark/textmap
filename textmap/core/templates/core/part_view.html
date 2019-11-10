@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Textmap - {{ text.name }}</title>
+</head>
+<body>
+
+{% for paragraph in paragraph_list %}
+    <p>{{ paragraph.raw_sentences }}</p>
+{% endfor %}
+
+</body>
+</html>
