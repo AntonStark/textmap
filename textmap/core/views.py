@@ -35,6 +35,7 @@ def section_view(request, section_uid):
     except Section.DoesNotExist:
         raise Http404
     text = section.text
+    subsections = section.sub()
     paragraph_list = section.collect_paragraphs()
 
     context = {'text': text, 'paragraph_list': paragraph_list}

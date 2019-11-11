@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Textmap - {{ text.name }}</title>
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Убираем двойные линии между ячейками */
+            border: 2px solid white; /* Прячем рамку вокруг таблицы */
+        }
+        td, th {
+            padding: 3px; /* Поля вокруг содержимого таблицы */
+            border-bottom: 1px solid gray;
+        }
+        .table-minimal {width: 1%; white-space: nowrap;}
+        .paragraph-table-left {text-align: right}
+        .paragraph-table-right {text-align: left}
+        .paragraph-table-main {
+            width: 40%;
+            border-left: 1px solid gray;
+            border-right: 1px solid gray;
+        }
+  </style>
+</head>
+<body>
+
+<div style="padding-bottom: 20px">
+    <h2>Structure will be here...</h2>
+</div>
+
+<table>
+    <thead></thead>
+    <tbody> {% for paragraph in paragraph_list %}
+        <tr>
+        <td></td> {# left margin #}
+        <td class="paragraph-table-left table-minimal">
+            <div><label>
+                <input type="checkbox">
+            </label></div>
+        </td>
+        <td class="paragraph-table-left table-minimal">{{ paragraph.serial_number }}</td>
+        <td class="paragraph-table-main">{{ paragraph.raw_sentences }}</td>
+        <td class="paragraph-table-right table-minimal">
+            <div>
+                <input type="button" value="^">
+                <input type="button" value="v">
+            </div>
+        </td>
+        <td></td> {# right margin #}
+        </tr>
+    {% endfor %} </tbody>
+</table>
+
+</body>
+</html>

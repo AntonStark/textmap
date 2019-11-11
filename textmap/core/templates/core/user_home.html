@@ -5,7 +5,7 @@
     <title>Textmap home</title>
 </head>
 <body>
-<h2>Texts of <i>{{ user.username }}</i>:</h2>
+<h1>Texts of <i>{{ user.username }}</i></h1>
 <ul>
     {% for text in texts %}
         <li><a href="/textmap/text/{{ text.uid }}">{{ text.name }}</a></li>

@@ -73,6 +73,13 @@ class Section(models.Model):
     def of_section(section_uid):
         return Section.objects.filter(parent__uid=section_uid)
 
+    @staticmethod
+    def tree_view(section_list):
+        pass
+
+    def sub(self):
+        return Section.of_section(self.uid)
+
     def collect_paragraphs(self) -> t.List['Paragraph']:
         return Paragraph.objects.filter(section=self).order_by('serial_number')
 
