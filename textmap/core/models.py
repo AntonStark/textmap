@@ -131,12 +131,17 @@ class Paragraph(models.Model):
 
         if with_prev:
             to_delete: Paragraph = self.prev
+            after_that: Paragraph = to_delete.prev
             self.prev = to_delete.prev
+            after_that.next = self
         else:
             to_delete: Paragraph = self.next
+            after_that: Paragraph = to_delete.next
             self.next = to_delete.next
+            after_that.prev = self
         to_delete.delete()
         self.save()
+        after_that.save()
 
     @staticmethod
     def save_sequence(seq, section: Section, after: 'Paragraph' = None):

@@ -128,6 +128,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "core/static"),
+    '/var/www/textmap/static/',
+]
+
 
 MEDIA_ROOT = '/var/www/textmap/media/'
 

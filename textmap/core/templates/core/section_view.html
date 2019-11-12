@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +34,8 @@
             padding-left: 14px;
             padding-right: 14px;
         }
-  </style>
+    </style>
+    <script src="{% static 'core/interactive.js' %}"></script>
 </head>
 <body>
 
@@ -52,11 +54,13 @@
             </label></div>
         </td>
         <td class="paragraph-table-left table-minimal">{{ paragraph.serial_number }}</td>
-        <td class="paragraph-table-main">{{ paragraph.raw_sentences }}</td>
+        <td class="paragraph-table-main" id="{{ paragraph.serial_number }}">    {# id for anchor #}
+            {{ paragraph.raw_sentences }}
+        </td>
         <td class="paragraph-table-right table-minimal">
             <div>
-                <a class="button" href="/textmap/paragraph_concat_prev/{{ paragraph.uid }}">^</a>
-                <a class="button" href="/textmap/paragraph_concat_next/{{ paragraph.uid }}">v</a>
+                <a class="button" href="/textmap/paragraph_concat/{{ paragraph.uid }}?mode=prev">^</a>
+                <a class="button" href="/textmap/paragraph_concat/{{ paragraph.uid }}?mode=next">v</a>
             </div>
         </td>
         <td></td> {# right margin #}

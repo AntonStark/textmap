@@ -37,31 +37,32 @@ def add_section(_, section_uid):
 
 
 @api_view(['GET'])
-def paragraph_concat_prev(_, paragraph_uid):
-    log.debug(f'start, paragraph_uid={paragraph_uid}')
+def paragraph_concat(request, paragraph_uid):
+    mode = request.GET.get('mode', '')
+    if mode not in ['prev', 'next']:
+        log.debug(f'wrong mode option \"{mode}\"')
+        return JsonResponse({'error': 'wrong mode option', 'options': 'prev, next'}, status=401)
+
     try:
-        par = Paragraph.objects.get(uid=paragraph_uid)
+        anchor_number = int(request.GET.get('number', ''))
+    except ValueError:
+        anchor_number = None
+
+    log.debug(f'start, paragraph_uid={paragraph_uid}, mode={mode}, anchor_number={anchor_number}')
+    try:
+        paragraph = Paragraph.objects.get(uid=paragraph_uid)
     except Paragraph.DoesNotExist:
         log.debug(f'not found, request for paragraph_uid={paragraph_uid}')
         return JsonResponse({'error': 'paragraph not found', 'paragraph_uid': paragraph_uid}, status=404)
     else:
-        par.concat(with_prev=True)
+        with_prev = mode == 'prev'
+        paragraph.concat(with_prev=with_prev)
         log.debug(f'done, paragraph_uid={paragraph_uid}')
-        return HttpResponseRedirect(redirect_to=reverse('section_view', args=[par.section.uid]))
-
-
-@api_view(['GET'])
-def paragraph_concat_next(_, paragraph_uid):
-    log.debug(f'start, paragraph_uid={paragraph_uid}')
-    try:
-        par = Paragraph.objects.get(uid=paragraph_uid)
-    except Paragraph.DoesNotExist:
-        log.debug(f'not found, request for paragraph_uid={paragraph_uid}')
-        return JsonResponse({'error': 'paragraph not found', 'paragraph_uid': paragraph_uid}, status=404)
-    else:
-        par.concat(with_prev=False)
-        log.debug(f'done, paragraph_uid={paragraph_uid}')
-        return HttpResponseRedirect(redirect_to=reverse('section_view', args=[par.section.uid]))
+        return HttpResponseRedirect(
+            redirect_to='{url}#{number}'.format(
+                url=reverse('section_view', args=[paragraph.section.uid]),
+                number=paragraph.serial_number if not anchor_number else anchor_number)
+        )
 
 
 # PART
