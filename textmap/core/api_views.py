@@ -2,11 +2,25 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from rest_framework.decorators import api_view
 
-from core.models import Section, Text
+from core.models import Text, Section, Paragraph
 from core.views import log
 
 
 # STAFF
+
+@api_view(['GET'])
+def parse_text(_, text_uid):
+    log.debug(f'start, text_uid={text_uid}')
+    try:
+        text = Text.objects.get(uid=text_uid)
+    except Text.DoesNotExist:
+        log.debug(f'not found, request for text_uid={text_uid}')
+        return JsonResponse({'error': 'text not found', 'text_uid': text_uid}, status=404)
+    else:
+        text.update_paragraph_entries()
+        log.debug(f'successfully updated text_uid={text_uid}')
+        return HttpResponseRedirect(redirect_to=reverse('text_info', args=[text_uid]))
+
 
 @api_view(['GET'])
 def add_section(_, section_uid):
@@ -23,17 +37,31 @@ def add_section(_, section_uid):
 
 
 @api_view(['GET'])
-def parse_text(_, text_uid):
-    log.debug(f'start, text_uid={text_uid}')
+def paragraph_concat_prev(_, paragraph_uid):
+    log.debug(f'start, paragraph_uid={paragraph_uid}')
     try:
-        text = Text.objects.get(uid=text_uid)
-    except Text.DoesNotExist:
-        log.debug(f'not found, request for text_uid={text_uid}')
-        return JsonResponse({'error': 'text not found', 'text_uid': text_uid}, status=404)
+        par = Paragraph.objects.get(uid=paragraph_uid)
+    except Paragraph.DoesNotExist:
+        log.debug(f'not found, request for paragraph_uid={paragraph_uid}')
+        return JsonResponse({'error': 'paragraph not found', 'paragraph_uid': paragraph_uid}, status=404)
     else:
-        text.update_paragraph_entries()
-        log.debug(f'successfully updated text_uid={text_uid}')
-        return HttpResponseRedirect(redirect_to=reverse('text_info', args=[text_uid]))
+        par.concat(with_prev=True)
+        log.debug(f'done, paragraph_uid={paragraph_uid}')
+        return HttpResponseRedirect(redirect_to=reverse('section_view', args=[par.section.uid]))
+
+
+@api_view(['GET'])
+def paragraph_concat_next(_, paragraph_uid):
+    log.debug(f'start, paragraph_uid={paragraph_uid}')
+    try:
+        par = Paragraph.objects.get(uid=paragraph_uid)
+    except Paragraph.DoesNotExist:
+        log.debug(f'not found, request for paragraph_uid={paragraph_uid}')
+        return JsonResponse({'error': 'paragraph not found', 'paragraph_uid': paragraph_uid}, status=404)
+    else:
+        par.concat(with_prev=False)
+        log.debug(f'done, paragraph_uid={paragraph_uid}')
+        return HttpResponseRedirect(redirect_to=reverse('section_view', args=[par.section.uid]))
 
 
 # PART
@@ -43,6 +71,7 @@ def text_sections(_, text_uid):
     """
     Observe all section of text
 
+    :param _: request
     :param text_uid: uid of text to observe
     :return: JsonResponse in form {text_uid, sections: [{id, parent}, ]}
     """
@@ -57,6 +86,7 @@ def sub_sections(_, section_uid):
     """
     Observe sub-sections of given part
 
+    :param _: request
     :param section_uid: id of part to observe
     :return: JsonResponse in form {section_id, sections: [{id, parent}, ]}
     """

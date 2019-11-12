@@ -122,6 +122,22 @@ class Paragraph(models.Model):
         self.next = p
         self.save()
 
+    @transaction.atomic
+    def concat(self, with_prev=True):   # will not update serial_numbers for now
+        # N.B. assume now that current, prev and next all belong same section
+        updated_raw_sentences = ' '.join([self.prev.raw_sentences, self.raw_sentences]) \
+            if with_prev else ' '.join([self.raw_sentences, self.next.raw_sentences])
+        self.raw_sentences = updated_raw_sentences
+
+        if with_prev:
+            to_delete: Paragraph = self.prev
+            self.prev = to_delete.prev
+        else:
+            to_delete: Paragraph = self.next
+            self.next = to_delete.next
+        to_delete.delete()
+        self.save()
+
     @staticmethod
     def save_sequence(seq, section: Section, after: 'Paragraph' = None):
         prev = after
