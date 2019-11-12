@@ -1,0 +1,17 @@
+<h2>Structure:</h2>
+
+{% if section.parent.uid %}
+    <a href="/textmap/section/{{ section.parent.uid }}">Назад</a>
+{% else %}
+    <a href="/textmap/text/{{ section.text.uid }}">Наверх</a>
+{% endif %}
+
+{% for section, indent in sections_flat_tree %}
+    <div style="padding-left: calc(20px * {{ indent }})">
+        <a href="/textmap/section/{{ section.uid }}">
+            {{ section.subtitle|default:section.uid }}
+        </a>
+    </div>
+{% endfor %}
+
+<a href="/textmap/add_section/{{ section.uid }}">Добавить раздел</a>

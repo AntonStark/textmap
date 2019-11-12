@@ -9,17 +9,31 @@ from core.views import log
 # STAFF
 
 @api_view(['GET'])
-def parse_text(_, text_id):
-    log.debug(f'start, text_uid={text_id}')
+def add_section(_, section_uid):
+    log.debug(f'start, section_uid={section_uid}')
     try:
-        text = Text.objects.get(uid=text_id)
+        current = Section.objects.get(uid=section_uid)
+    except Section.DoesNotExist:
+        log.debug(f'not found, request for section_uid={section_uid}')
+        return JsonResponse({'error': 'section not found', 'section_uid': section_uid}, status=404)
+    else:
+        current.add_sub()
+        log.debug(f'done, add section to section_uid={section_uid}')
+        return HttpResponseRedirect(redirect_to=reverse('section_view', args=[section_uid]))
+
+
+@api_view(['GET'])
+def parse_text(_, text_uid):
+    log.debug(f'start, text_uid={text_uid}')
+    try:
+        text = Text.objects.get(uid=text_uid)
     except Text.DoesNotExist:
-        log.debug(f'not found, request for text_uid={text_id}')
-        return JsonResponse({'error': 'text not found', 'text_id': text_id}, status=404)
+        log.debug(f'not found, request for text_uid={text_uid}')
+        return JsonResponse({'error': 'text not found', 'text_uid': text_uid}, status=404)
     else:
         text.update_paragraph_entries()
-        log.debug(f'successfully updated text_uid={text_id}')
-    return HttpResponseRedirect(redirect_to=reverse('text_info', args=[text_id]))
+        log.debug(f'successfully updated text_uid={text_uid}')
+        return HttpResponseRedirect(redirect_to=reverse('text_info', args=[text_uid]))
 
 
 # PART

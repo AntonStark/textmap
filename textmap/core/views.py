@@ -23,9 +23,10 @@ def text_info(request, text_id):
         text = Text.objects.get(uid=text_id)
     except Text.DoesNotExist:
         raise Http404
-    sections = text.collect_sections()
+    root_section = text.root_section
+    sections_flat_tree = root_section.sub_tree(flat=True, include_root=True)
 
-    context = {'text': text, 'sections': sections}
+    context = {'text': text, 'section': root_section, 'sections_flat_tree': sections_flat_tree}
     return render(request, 'core/text_info.html', context=context)
 
 
@@ -35,8 +36,13 @@ def section_view(request, section_uid):
     except Section.DoesNotExist:
         raise Http404
     text = section.text
-    subsections = section.sub()
+    sections_flat_tree = section.sub_tree(flat=True)
     paragraph_list = section.collect_paragraphs()
 
-    context = {'text': text, 'paragraph_list': paragraph_list}
+    context = {
+        'text': text,
+        'section': section,
+        'sections_flat_tree': sections_flat_tree,
+        'paragraph_list': paragraph_list
+    }
     return render(request, 'core/section_view.html', context=context)

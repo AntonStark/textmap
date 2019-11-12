@@ -1,3 +1,4 @@
+import itertools
 import uuid
 import typing as t
 from django.conf import settings
@@ -43,7 +44,7 @@ class Text(models.Model):
         Paragraph.save_sequence(par_seq, self.root_section)
 
     def collect_sections(self):
-        return Section.objects.filter(text=self)
+        return Section.of_text(self.uid)
 
 
 class Section(models.Model):
@@ -60,9 +61,9 @@ class Section(models.Model):
 
     @staticmethod
     def build_json(sequence: t.Iterable['Section']):
-        return list(map(lambda part: {
-            'id': part.id,
-            'parent': part.parent,
+        return list(map(lambda section: {
+            'id': section.id,
+            'parent': section.parent,
         }, sequence))
 
     @staticmethod
@@ -73,12 +74,30 @@ class Section(models.Model):
     def of_section(section_uid):
         return Section.objects.filter(parent__uid=section_uid)
 
-    @staticmethod
-    def tree_view(section_list):
-        pass
-
-    def sub(self):
+    def sub(self) -> t.List['Section']:
         return Section.of_section(self.uid)
+
+    def add_sub(self):
+        Section.objects.create(parent=self, text=self.text)
+
+    def sub_tree(self, flat=False, include_root=False):
+        if flat:
+            # inner include_root force appending sub sections and indent remains
+            without_root = list(itertools.chain.from_iterable(
+                s.sub_tree(flat=True, include_root=True)
+                for s in self.sub()
+            ))
+            if not include_root:
+                return without_root
+            else:
+                return [(self, 0)] \
+                       + [(s, i + 1) for s, i in without_root]
+        else:
+            without_root = [(s, s.sub_tree(flat=False, include_root=False)) for s in self.sub()]
+            if not include_root:
+                return without_root
+            else:
+                return [(self, without_root)]
 
     def collect_paragraphs(self) -> t.List['Paragraph']:
         return Paragraph.objects.filter(section=self).order_by('serial_number')

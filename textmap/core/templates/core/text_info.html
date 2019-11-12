@@ -8,13 +8,8 @@
 <h1>{{ text.name }}</h1>
 <a href="/textmap/parse_text/{{ text.uid }}">Пересканировать файл</a>
 
-<div>
-    <h2>Structure:</h2>
-    <ul>
-        {% for section in sections %}
-            <li><a href="/textmap/section/{{ section.uid }}">{{ section.uid }}</a></li>
-        {% endfor %}
-    </ul>
+<div style="padding-bottom: 20px">
+    {% include "core/structure_view.html"%}
 </div>
 </body>
 </html>
