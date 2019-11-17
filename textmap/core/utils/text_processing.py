@@ -1,3 +1,4 @@
 def paragraph_seq(path):
     with open(path, 'r') as tf:
-        yield from tf.readlines()
+        for paragraph in tf.readlines():
+            yield [paragraph]

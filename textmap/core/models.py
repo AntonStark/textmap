@@ -144,12 +144,12 @@ class Paragraph(models.Model):
         after_that.save()
 
     @staticmethod
-    def save_sequence(seq, section: Section, after: 'Paragraph' = None):
+    def save_sequence(seq: t.Iterable[t.List[str]], section: Section, after: 'Paragraph' = None):
         prev = after
         for s in seq:
             serial = prev.serial_number + 1 if prev else 0
             created = Paragraph.objects.create(section=section, prev=prev,
-                                               serial_number=serial, raw_sentences=s)
+                                               serial_number=serial, raw_sentences=' '.join(s))
             # we touch each Paragraph two times: on create and to set next
             # it's more elegant to generate uid for next while before save current
             if prev:
