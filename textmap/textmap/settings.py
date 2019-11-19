@@ -153,13 +153,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/textmap_server/errors.log',   # todo rename
+            'filename': '/var/log/textmap/errors.log',
         },
         'debug_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/textmap_server/debug.log',    # todo rename too
+            'filename': '/var/log/textmap/debug.log',
         },
     },
     'loggers': {
@@ -170,3 +170,6 @@ LOGGING = {
         },
     }
 }
+
+FILE_DRIVERS = {}
+LANGUAGE_PARSERS = {}

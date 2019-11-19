@@ -6,7 +6,7 @@ from django.contrib.postgres import fields
 from django.db import models, transaction
 from os import path
 
-from core.utils import text_processing
+from core.utils import file_drivers, language_parsers
 
 
 class Text(models.Model):
@@ -20,8 +20,10 @@ class Text(models.Model):
 
     name = models.TextField(blank=False, null=False)
     file_path = models.FileField(upload_to='uploads/text/')
+    file_type = models.CharField(default='txt', max_length=8)
 
-    authors = fields.JSONField(default=dict)
+    authors = fields.JSONField(default=dict)    # todo callable to construct default
+    # as {"authors": [{"name": "Robert Sheckley"}]}
     language = models.CharField(default='ru', max_length=8)
     description = models.TextField(default='', blank=True)
 
@@ -38,10 +40,21 @@ class Text(models.Model):
 
     @transaction.atomic
     def update_paragraph_entries(self):
-        Paragraph.objects.filter(section__text=self).delete()
+        driver_class = settings.FILE_DRIVERS.get(self.file_type, None)
+        parser_class = settings.LANGUAGE_PARSERS.get(self.language, None)
+        if not driver_class:
+            return  # todo error msg should be
+        elif not parser_class:
+            return
+        else:
+            driver: file_drivers.AbstractFileDriver = driver_class()
+            parser: language_parsers.AbstractLanguageParser = parser_class()
 
-        par_seq = text_processing.paragraph_seq(path.join(settings.MEDIA_ROOT, self.file_path.path))
-        Paragraph.save_sequence(par_seq, self.root_section)
+        Paragraph.objects.filter(section__text=self).delete()
+        with open(path.join(settings.MEDIA_ROOT, self.file_path.path), 'r') as tf:
+            par_seq = driver.paragraph_sequence(tf)
+            paragraphs_sentences = parser.parse(par_seq)
+            Paragraph.save_sequence(paragraphs_sentences, self.root_section)
 
     def collect_sections(self):
         return Section.of_text(self.uid)
