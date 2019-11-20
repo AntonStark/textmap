@@ -1,5 +1,6 @@
 import itertools
 import uuid
+import re
 import typing as t
 from django.conf import settings
 from django.contrib.postgres import fields
@@ -130,6 +131,7 @@ class Paragraph(models.Model):
     serial_number = models.IntegerField(null=True, default=None)
     raw_sentences = models.TextField(blank=True, null=False, default='')
     sentence_ids = fields.ArrayField(models.BigIntegerField(), null=True)
+    language = models.CharField(max_length=8)     # per paragraph language
 
     def set_next(self, p: 'Paragraph'):
         self.next = p
@@ -159,15 +161,29 @@ class Paragraph(models.Model):
     @staticmethod
     def save_sequence(seq: t.Iterable[t.List[str]], section: Section, after: 'Paragraph' = None):
         prev = after
-        for s in seq:
+        for sentences in seq:
             serial = prev.serial_number + 1 if prev else 0
             created = Paragraph.objects.create(section=section, prev=prev,
-                                               serial_number=serial, raw_sentences=' '.join(s))
+                                               serial_number=serial, raw_sentences=' '.join(sentences))
+            created._create_sentence_objs(sentences)
             # we touch each Paragraph two times: on create and to set next
             # it's more elegant to generate uid for next while before save current
+            # also paragraph uid needs to create sentences, and sentence_ids could be set while creating Paragraph
+            # if todo allocate next paragraph uid on previous sequence step
             if prev:
                 prev.set_next(created)
             prev = created
+
+    def save(self, *args, **kwargs):
+        self.language = self.section.text.language
+        super(Paragraph, self).save(*args, **kwargs)
+
+    def _create_sentence_objs(self, raw_sentences):
+        self.sentence_ids = [
+            Sentence.objects.create(paragraph=self, raw=s).id
+            for s in raw_sentences
+        ]
+        self.save()
 
 
 class Sentence(models.Model):
@@ -175,3 +191,16 @@ class Sentence(models.Model):
     paragraph = models.ForeignKey(Paragraph, on_delete=models.CASCADE)
 
     raw = models.TextField()
+    parts = fields.ArrayField(models.TextField())
+
+    @staticmethod
+    def clear_non_print(raw: str) -> str:
+        return re.sub(r'  *', ' ', raw.replace('\n', ''))
+
+    def save(self, *args, **kwargs):
+        parser_class = settings.LANGUAGE_PARSERS.get(self.paragraph.language, None)
+        if parser_class:
+            parser = parser_class()
+            _raw = Sentence.clear_non_print(self.raw)
+            self.parts = list(filter(len, parser.parse_sentence(_raw)))
+        super(Sentence, self).save(*args, **kwargs)
