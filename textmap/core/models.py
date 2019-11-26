@@ -7,7 +7,7 @@ from django.contrib.postgres import fields
 from django.db import models, transaction
 from os import path
 
-from core.utils import file_drivers, language_parsers
+from core.utils import event_handlers, event_validators, file_drivers, language_parsers
 
 
 class Text(models.Model):
@@ -68,8 +68,16 @@ class Section(models.Model):
     """
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     text = models.ForeignKey(Text, on_delete=models.CASCADE)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE,
-                               null=True, default=None)
+
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, default=None)
+    following_sibling = models.ForeignKey('self', related_name='+', on_delete=models.SET_NULL,
+                                          null=True, default=None)
+    preceding_sibling = models.ForeignKey('self', related_name='+', on_delete=models.SET_NULL,
+                                          null=True, default=None)
+    from_paragraph = models.OneToOneField('Paragraph', related_name='+', on_delete=models.SET_NULL,
+                                          null=True, default=None)
+    to_paragraph = models.OneToOneField('Paragraph', related_name='+', on_delete=models.SET_NULL,
+                                        null=True, default=None)
 
     subtitle = models.TextField(blank=True, null=False, default='')
 
@@ -133,6 +141,9 @@ class Paragraph(models.Model):
     sentence_ids = fields.ArrayField(models.BigIntegerField(), null=True)
     language = models.CharField(max_length=8)     # per paragraph language
 
+    def __str__(self):
+        return self.raw_sentences[:64] + '..'
+
     def set_next(self, p: 'Paragraph'):
         self.next = p
         self.save()
@@ -184,6 +195,43 @@ class Paragraph(models.Model):
             for s in raw_sentences
         ]
         self.save()
+
+
+class SectionEvent(models.Model):
+    BUILD_SECTION = 'BUILD_SECTION'
+    UNION_SECTION = 'UNION_SECTION'
+    BORDER_SECTION = 'BORDER_SECTION'
+    OFFSET_SECTION = 'OFFSET_SECTION'
+    JOIN_SECTION = 'JOIN_SECTION'
+    VALIDATORS: t.Dict[str, event_validators.EventValidator] = {
+        BUILD_SECTION: event_validators.build_section,
+        UNION_SECTION: event_validators.union_section,
+        BORDER_SECTION: event_validators.border_section,
+        OFFSET_SECTION: event_validators.offset_section,
+        JOIN_SECTION: event_validators.join_section,
+    }
+    HANDLERS: t.Dict[str, t.Any] = {
+        # todo
+    }
+
+    id = models.BigIntegerField(primary_key=True)
+    text = models.ForeignKey(Text, on_delete=models.CASCADE, null=False)
+    session = models.ForeignKey(settings.SESSION_MODEL, on_delete=models.CASCADE, editable=False)
+    EVENT_TYPES = (
+        (BUILD_SECTION, 'build_section'),
+        (UNION_SECTION, 'union_section'),
+        (BORDER_SECTION, 'border_section'),
+        (OFFSET_SECTION, 'offset_section'),
+        (JOIN_SECTION, 'join_section'),
+    )
+    type = models.CharField(max_length=16, blank=False, choices=EVENT_TYPES)
+    body = fields.JSONField(null=False, default=dict)
+    canceled = models.BooleanField(null=False, default=False)
+
+    @staticmethod
+    def validate_event(event_type: str, event_body: dict) -> bool:
+        validator = SectionEvent.VALIDATORS.get(event_type, None)
+        return validator(event_type, event_body) if validator else False
 
 
 class Sentence(models.Model):

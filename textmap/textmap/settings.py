@@ -107,6 +107,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'auth.User'
 
+SESSION_MODEL = 'sessions.Session'
+
 LOGIN_URL = '/accounts/login/'
 
 # Internationalization
