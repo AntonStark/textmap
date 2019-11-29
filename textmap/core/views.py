@@ -1,6 +1,8 @@
 import logging
 from django.shortcuts import render, Http404
+from django.http import HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 
 from core.models import Text, Section
 
@@ -16,6 +18,26 @@ def user_home(request):
         'texts': Text.objects.filter(owner=user),
     }
     return render(request, 'core/user_home.html', context=context)
+
+
+@login_required
+@require_POST
+def register_action(request):
+    user, session = request.user, request.session
+    log.debug(f'start with user={user}, session={session}')
+    try:
+        event_type = request.POST['type']
+        event_body = request.POST['body']
+        if not isinstance(event_body, dict):
+            raise TypeError('event_body must be a dict')
+    except KeyError:
+        log.debug('request.POST missing fields')
+        return HttpResponseBadRequest('missing fields \"type\" and/or \"body\"')
+    except TypeError:
+        log.debug('request.POST[\"body\"] not a dict')
+        return HttpResponseBadRequest('event_body must be a dict')
+
+    # todo authorisation and validation, then save and response with delta
 
 
 def text_info(request, text_id):
