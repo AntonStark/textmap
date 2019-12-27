@@ -7,7 +7,7 @@ from django.contrib.postgres import fields
 from django.db import models, transaction
 from os import path
 
-from core.utils import event_handlers, event_validators, file_drivers, language_parsers
+from core.utils import file_drivers, language_parsers
 
 
 class Text(models.Model):
@@ -198,6 +198,7 @@ class Paragraph(models.Model):
 
 
 class SectionEvent(models.Model):
+    from core.utils import event_validators
     BUILD_SECTION = 'BUILD_SECTION'
     UNION_SECTION = 'UNION_SECTION'
     BORDER_SECTION = 'BORDER_SECTION'
@@ -210,9 +211,7 @@ class SectionEvent(models.Model):
         OFFSET_SECTION: event_validators.offset_section,
         JOIN_SECTION: event_validators.join_section,
     }
-    HANDLERS: t.Dict[str, t.Any] = {
-        # todo
-    }
+    HANDLERS: t.Dict[str, t.Any] = {}
 
     id = models.BigIntegerField(primary_key=True)
     text = models.ForeignKey(Text, on_delete=models.CASCADE, null=False)
