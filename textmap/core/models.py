@@ -165,9 +165,13 @@ class Paragraph(models.Model):
             after_that: Paragraph = to_delete.next
             self.next = to_delete.next
             after_that.prev = self
+
+        deleting_uid = to_delete.uid
         to_delete.delete()
         self.save()
         after_that.save()
+
+        return self.uid, deleting_uid, after_that.uid
 
     @staticmethod
     def save_sequence(seq: t.Iterable[t.List[str]], section: Section, after: 'Paragraph' = None):

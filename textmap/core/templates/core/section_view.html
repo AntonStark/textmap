@@ -30,6 +30,7 @@
 
             text-decoration: none;
             color: initial;
+            border: 1px solid grey;
 
             padding-left: 14px;
             padding-right: 14px;
@@ -59,8 +60,10 @@
         </td>
         <td class="paragraph-table-right table-minimal">
             <div>
-                <a class="button" href="/textmap/paragraph_concat/{{ paragraph.uid }}?mode=prev">^</a>
-                <a class="button" href="/textmap/paragraph_concat/{{ paragraph.uid }}?mode=next">v</a>
+                <a class="button"
+                   onclick="handlerParagraphConcat('{{ paragraph.uid }}', 'prev')">^</a>
+                <a class="button"
+                   onclick="handlerParagraphConcat('{{ paragraph.uid }}', 'next')">v</a>
             </div>
         </td>
         <td></td> {# right margin #}

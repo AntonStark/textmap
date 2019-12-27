@@ -54,15 +54,23 @@ def paragraph_concat(request, paragraph_uid):
     except Paragraph.DoesNotExist:
         log.debug(f'not found, request for paragraph_uid={paragraph_uid}')
         return JsonResponse({'error': 'paragraph not found', 'paragraph_uid': paragraph_uid}, status=404)
-    else:
-        with_prev = mode == 'prev'
-        paragraph.concat(with_prev=with_prev)
-        log.debug(f'done, paragraph_uid={paragraph_uid}')
-        return HttpResponseRedirect(
-            redirect_to='{url}#{number}'.format(
-                url=reverse('section_view', args=[paragraph.section.uid]),
-                number=paragraph.serial_number if not anchor_number else anchor_number)
-        )
+
+    with_prev = mode == 'prev'
+    altered_uid, deleted_uid, after_that_uid = paragraph.concat(with_prev=with_prev)
+    log.debug(f'done, paragraph_uid={paragraph_uid}')
+
+    altered_par, after_deleted_par = Paragraph.objects.get(uid=altered_uid), Paragraph.objects.get(uid=after_that_uid)
+    return JsonResponse({
+        'status': 'ok',
+        'paragraph_changed': [{
+            'uid': altered_par.uid,
+            'serial_number': altered_par.serial_number,
+            'raw_sentences': altered_par.raw_sentences
+        }],
+        'paragraph_removed': [{
+            'uid': deleted_uid
+        }],
+    })
 
 
 # PART
