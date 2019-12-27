@@ -155,13 +155,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/textmap/errors.log',
+            'filename': '/var/log/develop/textmap/errors.log',
         },
         'debug_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/textmap/debug.log',
+            'filename': '/var/log/develop/textmap/debug.log',
         },
     },
     'loggers': {

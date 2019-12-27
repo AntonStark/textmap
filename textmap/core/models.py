@@ -7,7 +7,7 @@ from django.contrib.postgres import fields
 from django.db import models, transaction
 from os import path
 
-from core.utils import event_handlers, event_validators, file_drivers, language_parsers
+from core.utils import file_drivers, language_parsers
 
 
 class Text(models.Model):
@@ -130,7 +130,7 @@ class Paragraph(models.Model):
     Smallest part of text as a bag of ideas.
     """
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)      # fixme probably models.SET_NULL here
     prev = models.OneToOneField('self', related_name='+',
                                 on_delete=models.SET_NULL, null=True, default=None)
     next = models.OneToOneField('self', related_name='+',
@@ -198,6 +198,7 @@ class Paragraph(models.Model):
 
 
 class SectionEvent(models.Model):
+    from core.utils.section_events import event_validators
     BUILD_SECTION = 'BUILD_SECTION'
     UNION_SECTION = 'UNION_SECTION'
     BORDER_SECTION = 'BORDER_SECTION'
@@ -229,9 +230,9 @@ class SectionEvent(models.Model):
     canceled = models.BooleanField(null=False, default=False)
 
     @staticmethod
-    def validate_event(event_type: str, event_body: dict) -> bool:
+    def validate_event(section_index, event_type: str, event_body: dict) -> t.Dict[str, Paragraph]:
         validator = SectionEvent.VALIDATORS.get(event_type, None)
-        return validator(event_type, event_body) if validator else False
+        return validator(section_index, event_body) if validator else {}
 
 
 class Sentence(models.Model):
