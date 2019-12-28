@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from rest_framework.decorators import api_view
 
-from core.models import Text, Section, Paragraph
+from core.models import Text, Section, Paragraph, Sentence
 from core.views import log
 
 
@@ -64,13 +64,27 @@ def paragraph_concat(request, paragraph_uid):
         'status': 'ok',
         'paragraph_changed': [{
             'uid': altered_par.uid,
-            'serial_number': altered_par.serial_number,
-            'raw_sentences': altered_par.raw_sentences
+            'raw_sentences': altered_par.sentences(raw=True)
         }],
         'paragraph_removed': [{
             'uid': deleted_uid
         }],
-    })
+    }, status=200)
+
+
+@api_view(['GET'])
+def paragraph_split(_, after_sentence_id):
+    try:
+        target_paragraph = Sentence.objects.get(id=after_sentence_id).paragraph
+    except Sentence.DoesNotExist:
+        return JsonResponse({'error': 'bad sentence id'}, status=400)
+
+    changed, created = target_paragraph.split(after_sentence_id)
+    return JsonResponse({
+        'status': 'ok',
+        'target_paragraph': {'uid': changed.uid, 'sentences': changed.sentences(raw=True)},
+        'created_paragraph': {'uid': created.uid, 'sentences': created.sentences(raw=True)}
+    }, status=200)
 
 
 # PART

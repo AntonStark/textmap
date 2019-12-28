@@ -12,7 +12,7 @@
         }
         td, th {
             padding: 3px; /* Поля вокруг содержимого таблицы */
-            border-bottom: 1px solid gray;
+            border-bottom: 1px solid lightgray;
         }
         .table-minimal {width: 1%; white-space: nowrap;}
         .paragraph-table-left {text-align: right}
@@ -26,7 +26,6 @@
         a.button {
             -webkit-appearance: button;
             -moz-appearance: button;
-            appearance: button;
 
             text-decoration: none;
             color: initial;
@@ -34,6 +33,13 @@
 
             padding-left: 14px;
             padding-right: 14px;
+        }
+        .mark-paragraph-split {
+            padding: 0 3px;
+            margin-right: 3px;
+        }
+        .mark-paragraph-split:hover {
+            background: grey;
         }
     </style>
     <script src="{% static 'core/interactive.js' %}"></script>
@@ -46,24 +52,27 @@
 
 <table>
     <thead></thead>
-    <tbody> {% for paragraph in paragraph_list %}
-        <tr>
+    <tbody> {% for paragraph_uid, sentences in paragraphs.items %}
+        <tr id="{{ paragraph_uid }}">
         <td></td> {# left margin #}
         <td class="paragraph-table-left table-minimal">
             <div><label>
                 <input type="checkbox">
             </label></div>
         </td>
-        <td class="paragraph-table-left table-minimal">{{ paragraph.serial_number }}</td>
-        <td class="paragraph-table-main" id="{{ paragraph.serial_number }}">    {# id for anchor #}
-            {{ paragraph.raw_sentences }}
+        <td class="paragraph-table-left table-minimal">&rangle;</td>
+        <td class="paragraph-table-main">
+            {% for s in sentences %}
+                {{ s.raw }}
+                <a class="mark-paragraph-split" onclick="handlerParagraphSplit('{{ s.id }}')"></a>
+            {% endfor %}
         </td>
         <td class="paragraph-table-right table-minimal">
             <div>
                 <a class="button"
-                   onclick="handlerParagraphConcat('{{ paragraph.uid }}', 'prev')">^</a>
+                   onclick="handlerParagraphConcat('{{ paragraph_uid }}', 'prev')">^</a>
                 <a class="button"
-                   onclick="handlerParagraphConcat('{{ paragraph.uid }}', 'next')">v</a>
+                   onclick="handlerParagraphConcat('{{ paragraph_uid }}', 'next')">v</a>
             </div>
         </td>
         <td></td> {# right margin #}

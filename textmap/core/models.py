@@ -136,7 +136,7 @@ class Paragraph(models.Model):
     next = models.OneToOneField('self', related_name='+',
                                 on_delete=models.SET_NULL, null=True, default=None)
 
-    serial_number = models.IntegerField(null=True, default=None)
+    serial_number = models.FloatField(null=True, default=None)
     raw_sentences = models.TextField(blank=True, null=False, default='')
     sentence_ids = fields.ArrayField(models.BigIntegerField(), null=True)
     language = models.CharField(max_length=8)     # per paragraph language
@@ -144,8 +144,21 @@ class Paragraph(models.Model):
     def __str__(self):
         return self.raw_sentences[:64] + '..'
 
-    def set_next(self, p: 'Paragraph'):
+    def _set_previous(self, p: 'Paragraph'):
+        self.prev = p
+        self.save()
+
+    def _set_next(self, p: 'Paragraph'):
         self.next = p
+        self.save()
+
+    @transaction.atomic
+    def _set_sentences(self, sentence_ids):
+        sentence_obj = Sentence.get_many(sentence_ids)
+        self.sentence_ids = list(sentence_obj.values_list('id', flat=True))
+        sentence_obj.update(paragraph=self)
+
+        self.raw_sentences = ' '.join([s.raw for s in sentence_obj])
         self.save()
 
     @transaction.atomic
@@ -186,7 +199,7 @@ class Paragraph(models.Model):
             # also paragraph uid needs to create sentences, and sentence_ids could be set while creating Paragraph
             # if todo allocate next paragraph uid on previous sequence step
             if prev:
-                prev.set_next(created)
+                prev._set_next(created)
             prev = created
 
     def save(self, *args, **kwargs):
@@ -199,6 +212,28 @@ class Paragraph(models.Model):
             for s in raw_sentences
         ]
         self.save()
+
+    def sentences(self, raw=False):
+        pk_list = self.sentence_ids
+        sentence_objs = Sentence.get_many(pk_list)
+        return [s.raw for s in sentence_objs] if raw else sentence_objs
+
+    @transaction.atomic
+    def split(self, after_sentence_id):
+        actual_next = self.next
+        new_paragraph = Paragraph(section=self.section, prev=self, next=self.next,
+                                  serial_number=(self.serial_number + self.next.serial_number) / 2.,
+                                  sentence_ids=None, language=self.language)
+        self._set_next(new_paragraph)
+        actual_next._set_previous(new_paragraph)
+
+        actual_sentences = self.sentence_ids
+        pos_split = actual_sentences.index(int(after_sentence_id)) + 1
+        preserve, move = actual_sentences[:pos_split], actual_sentences[pos_split:]
+        self._set_sentences(preserve)
+        new_paragraph._set_sentences(move)
+
+        return self, new_paragraph
 
 
 class SectionEvent(models.Model):
@@ -247,6 +282,11 @@ class Sentence(models.Model):
     @staticmethod
     def clear_non_print(raw: str) -> str:
         return re.sub(r'  *', ' ', raw.replace('\n', ''))
+
+    @staticmethod
+    def get_many(ids):
+        preserved = models.Case(*[models.When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
+        return Sentence.objects.filter(id__in=ids).order_by(preserved)
 
     def save(self, *args, **kwargs):
         parser_class = settings.LANGUAGE_PARSERS.get(self.paragraph.language, None)

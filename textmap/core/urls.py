@@ -12,6 +12,7 @@ urlpatterns = [
     path('parse_text/<str:text_uid>', api_views.parse_text, name='parse_text'),
     path('add_section/<str:section_uid>', api_views.add_section, name='add_section'),
     path('paragraph_concat/<str:paragraph_uid>', api_views.paragraph_concat, name='paragraph_concat'),
+    path('paragraph_split/<str:after_sentence_id>', api_views.paragraph_split, name='paragraph_split'),
 
     path('text_sections/<str:text_uid>', api_views.text_sections, name='text_sections'),
     path('sub_sections/<str:section_uid>', api_views.sub_sections, name='sub_sections'),

@@ -59,12 +59,13 @@ def section_view(request, section_uid):
         raise Http404
     text = section.text
     sections_flat_tree = section.sub_tree(flat=True)
-    paragraph_list = section.collect_paragraphs()
+    par2sentences = {p.uid: p.sentences()
+                     for p in section.collect_paragraphs()}
 
     context = {
         'text': text,
         'section': section,
         'sections_flat_tree': sections_flat_tree,
-        'paragraph_list': paragraph_list
+        'paragraphs': par2sentences
     }
     return render(request, 'core/section_view.html', context=context)
