@@ -144,6 +144,13 @@ class Paragraph(models.Model):
     def __str__(self):
         return self.raw_sentences[:64] + '..'
 
+    def _create_sentence_objs(self, raw_sentences):
+        self.sentence_ids = [
+            Sentence.objects.create(paragraph=self, raw=s).id
+            for s in raw_sentences
+        ]
+        self.save()
+
     def _set_previous(self, p: 'Paragraph'):
         self.prev = p
         self.save()
@@ -160,31 +167,6 @@ class Paragraph(models.Model):
 
         self.raw_sentences = ' '.join([s.raw for s in sentence_obj])
         self.save()
-
-    @transaction.atomic
-    def concat(self, with_prev=True):   # will not update serial_numbers for now
-        # N.B. assume now that current, prev and next all belong same section
-        updated_raw_sentences = ' '.join([self.prev.raw_sentences, self.raw_sentences]) \
-            if with_prev else ' '.join([self.raw_sentences, self.next.raw_sentences])
-        self.raw_sentences = updated_raw_sentences
-
-        if with_prev:
-            to_delete: Paragraph = self.prev
-            after_that: Paragraph = to_delete.prev
-            self.prev = to_delete.prev
-            after_that.next = self
-        else:
-            to_delete: Paragraph = self.next
-            after_that: Paragraph = to_delete.next
-            self.next = to_delete.next
-            after_that.prev = self
-
-        deleting_uid = to_delete.uid
-        to_delete.delete()
-        self.save()
-        after_that.save()
-
-        return self.uid, deleting_uid, after_that.uid
 
     @staticmethod
     def save_sequence(seq: t.Iterable[t.List[str]], section: Section, after: 'Paragraph' = None):
@@ -206,17 +188,35 @@ class Paragraph(models.Model):
         self.language = self.section.text.language
         super(Paragraph, self).save(*args, **kwargs)
 
-    def _create_sentence_objs(self, raw_sentences):
-        self.sentence_ids = [
-            Sentence.objects.create(paragraph=self, raw=s).id
-            for s in raw_sentences
-        ]
-        self.save()
-
     def sentences(self, raw=False):
         pk_list = self.sentence_ids
         sentence_objs = Sentence.get_many(pk_list)
         return [s.raw for s in sentence_objs] if raw else sentence_objs
+
+    @transaction.atomic
+    def concat(self, with_prev=True):   # will not update serial_numbers for now
+        # N.B. assume now that current, prev and next all belong same section
+        updated_sentence_ids = self.prev.sentence_ids + self.sentence_ids \
+            if with_prev else self.sentence_ids + self.next.sentence_ids
+        self._set_sentences(updated_sentence_ids)
+
+        if with_prev:
+            to_delete: Paragraph = self.prev
+            after_that: Paragraph = to_delete.prev
+            self.prev = to_delete.prev
+            after_that.next = self
+        else:
+            to_delete: Paragraph = self.next
+            after_that: Paragraph = to_delete.next
+            self.next = to_delete.next
+            after_that.prev = self
+
+        deleting_uid = to_delete.uid
+        to_delete.delete()
+        self.save()
+        after_that.save()
+
+        return self.uid, deleting_uid, after_that.uid
 
     @transaction.atomic
     def split(self, after_sentence_id):
@@ -295,3 +295,9 @@ class Sentence(models.Model):
             _raw = Sentence.clear_non_print(self.raw)
             self.parts = list(filter(len, parser.parse_sentence(_raw)))
         super(Sentence, self).save(*args, **kwargs)
+
+    def asObj(self: 'Sentence'):
+        return {
+            'id': self.id,
+            'raw': self.raw
+        }

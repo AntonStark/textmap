@@ -43,6 +43,7 @@
         }
     </style>
     <script src="{% static 'core/interactive.js' %}"></script>
+    <script src="{% static 'core/table.js' %}"></script>
 </head>
 <body>
 
@@ -64,7 +65,9 @@
         <td class="paragraph-table-main">
             {% for s in sentences %}
                 {{ s.raw }}
-                <a class="mark-paragraph-split" onclick="handlerParagraphSplit('{{ s.id }}')"></a>
+                {% if not forloop.last %}
+                    <a class="mark-paragraph-split" onclick="handlerParagraphSplit('{{ s.id }}')"></a>
+                {% endif %}
             {% endfor %}
         </td>
         <td class="paragraph-table-right table-minimal">

@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.decorators import api_view
 
 from core.models import Text, Section, Paragraph, Sentence
+from core.serializers import SentenceSerializer
 from core.views import log
 
 
@@ -62,13 +63,13 @@ def paragraph_concat(request, paragraph_uid):
     altered_par, after_deleted_par = Paragraph.objects.get(uid=altered_uid), Paragraph.objects.get(uid=after_that_uid)
     return JsonResponse({
         'status': 'ok',
-        'paragraph_changed': [{
+        'paragraph_changed': {
             'uid': altered_par.uid,
-            'raw_sentences': altered_par.sentences(raw=True)
-        }],
-        'paragraph_removed': [{
+            'sentences': SentenceSerializer(altered_par.sentences(), many=True).data
+        },
+        'paragraph_removed': {
             'uid': deleted_uid
-        }],
+        },
     }, status=200)
 
 
@@ -82,8 +83,14 @@ def paragraph_split(_, after_sentence_id):
     changed, created = target_paragraph.split(after_sentence_id)
     return JsonResponse({
         'status': 'ok',
-        'target_paragraph': {'uid': changed.uid, 'sentences': changed.sentences(raw=True)},
-        'created_paragraph': {'uid': created.uid, 'sentences': created.sentences(raw=True)}
+        'target_paragraph': {
+            'uid': changed.uid,
+            'sentences': SentenceSerializer(changed.sentences(), many=True).data
+        },
+        'created_paragraph': {
+            'uid': created.uid,
+            'sentences': SentenceSerializer(created.sentences(), many=True).data
+        }
     }, status=200)
 
 

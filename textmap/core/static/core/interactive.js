@@ -36,6 +36,9 @@ function handlerParagraphConcat(uuid, mode) {
         if (this.readyState === 4) {
             const res = JSON.parse(this.responseText);
             console.log(this.status, res);
+            tableAlterLine(res['paragraph_changed']['uid'],
+                res['paragraph_changed']['sentences']);
+            tableRemoveLine(res['paragraph_removed']['uid']);
         }
         else {
             console.log(this.readyState);
@@ -55,10 +58,20 @@ function handlerParagraphSplit(sentence_id) {
     req.onreadystatechange = function () {
         if (this.readyState === 4) {
             const res = JSON.parse(this.responseText);
-            console.log(this.status, res);
+            console.debug(this.status, res);
+            let s = tableInsertLine(res['target_paragraph']['uid'],
+                res['created_paragraph']['uid'],
+                res['created_paragraph']['sentences']);
+            if (s !== 0)
+                console.error('handlerParagraphSplit', 'tableInsertLine -> ', s);
+
+            s = tableAlterLine(res['target_paragraph']['uid'],
+                res['target_paragraph']['sentences']);
+            if (s !== 0)
+                console.error('handlerParagraphSplit', 'tableInsertLine -> ', s);
         }
         else {
-            console.log(this.readyState);
+            console.debug(this.readyState);
         }
     };
 
