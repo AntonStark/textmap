@@ -1,23 +1,13 @@
 import logging
-from django.shortcuts import render, Http404
+from django.shortcuts import redirect, render, Http404
 from django.http import HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
+from core.forms import TextForm
 from core.models import Text, Section
 
 log = logging.getLogger(__name__)
-
-
-@login_required
-def user_home(request):
-    log.debug(f'start with user={request.user}')
-    user = request.user
-    context = {
-        'user': request.user,
-        'texts': Text.objects.filter(owner=user),
-    }
-    return render(request, 'core/user_home.html', context=context)
 
 
 @login_required
@@ -40,6 +30,17 @@ def register_action(request):
     # todo authorisation and validation, then save and response with delta
 
 
+@login_required
+def user_home(request):
+    log.debug(f'start with user={request.user}')
+    user = request.user
+    context = {
+        'user': request.user,
+        'texts': Text.objects.filter(owner=user),
+    }
+    return render(request, 'core/user_home.html', context=context)
+
+
 def text_info(request, text_id):
     try:
         text = Text.objects.get(uid=text_id)
@@ -50,6 +51,24 @@ def text_info(request, text_id):
 
     context = {'text': text, 'section': root_section, 'sections_flat_tree': sections_flat_tree}
     return render(request, 'core/text_info.html', context=context)
+
+
+@login_required
+def load_text(request):
+    user = request.user
+    if request.method == 'POST':
+        form = TextForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return HttpResponseBadRequest()
+
+        text = form.save(commit=False)
+        text.owner = user
+        text.save()
+        return redirect('text_info', text_id=text.pk)
+    else:
+        form = TextForm()
+
+    return render(request, 'core/load_text.html', {'form': form})
 
 
 def section_view(request, section_uid):

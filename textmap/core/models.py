@@ -10,6 +10,10 @@ from os import path
 from core.utils import file_drivers, language_parsers
 
 
+def text_authors_default():
+    return {"authors": [{"name": ""}]}
+
+
 class Text(models.Model):
     """
     Main object ro store information about individual text
@@ -23,8 +27,7 @@ class Text(models.Model):
     file_path = models.FileField(upload_to='uploads/text/')
     file_type = models.CharField(default='txt', max_length=8)
 
-    authors = fields.JSONField(default=dict)    # todo callable to construct default
-    # as {"authors": [{"name": "Robert Sheckley"}]}
+    authors = fields.JSONField(default=text_authors_default)
     language = models.CharField(default='ru', max_length=8)
     description = models.TextField(default='', blank=True)
 
@@ -34,6 +37,7 @@ class Text(models.Model):
     def __str__(self):
         return f'{self.created.strftime("%H:%M:%S %d/%m/%Y")} - {self.name}'
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         if not self.pk or not self.root_section:
             self.root_section = Section.objects.create(text=self)

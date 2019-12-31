@@ -1,12 +1,15 @@
+from django.shortcuts import redirect
 from django.urls import path
 
 from core import api_views
 from core import views
 
 urlpatterns = [
-    path('', views.user_home, name='user_home'),
     path('action/', views.register_action, name='register_action'),
+    path('texts/', views.user_home, name='user_home'),
+    path('', lambda request: redirect('user_home', permanent=True)),
     path('text/<str:text_id>', views.text_info, name='text_info'),
+    path('text/', views.load_text, name='load_text'),
     path('section/<str:section_uid>', views.section_view, name='section_view'),
 
     path('parse_text/<str:text_uid>', api_views.parse_text, name='parse_text'),
