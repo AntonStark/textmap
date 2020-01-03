@@ -1,3 +1,7 @@
+"use strict";
+console.debug('table.js loaded');
+
+
 const columnCount = 6;
 const textColumn = 3;
 const cellConstructors = {
