@@ -1,0 +1,50 @@
+table {
+    width: 100%;
+    border-collapse: collapse; /* Убираем двойные линии между ячейками */
+    border: 2px solid white; /* Прячем рамку вокруг таблицы */
+}
+td, th {
+    padding: 3px; /* Поля вокруг содержимого таблицы */
+    border-bottom: 1px solid lightgray;
+}
+.table-minimal {width: 1%; white-space: nowrap;}
+
+.paragraph-table-left {display: none;}
+.paragraph-table-right {display: none;}
+.paragraph-table-main {
+    width: 100%;
+}
+@media only screen and (min-device-width: 961px) {
+    .paragraph-table-left {
+        display: table-cell;
+        text-align: right;
+    }
+    .paragraph-table-right {
+        display: table-cell;
+        text-align: left;
+    }
+    .paragraph-table-main {
+        width: 40%;
+        border-left: 1px solid gray;
+        border-right: 1px solid gray;
+    }
+}
+
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+
+    text-decoration: none;
+    color: initial;
+    border: 1px solid grey;
+
+    padding-left: 14px;
+    padding-right: 14px;
+}
+.mark-paragraph-split {
+    padding: 0 3px;
+    margin-right: 3px;
+}
+.mark-paragraph-split:hover {
+    background: grey;
+}

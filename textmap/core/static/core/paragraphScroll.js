@@ -63,6 +63,5 @@ const loadScrollPosition = function() {
         return;
 
     targetElem.scrollIntoView(true);
-    console.log('done');
 };
 window.addEventListener('load', loadScrollPosition);
