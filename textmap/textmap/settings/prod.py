@@ -14,9 +14,9 @@ ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS').split(' ')
 DATABASES = {
     'default': {
         'ENGINE': getenv('DB_ENGINE'),
-        'NAME': getenv('DB_NAME'),
-        'USER': getenv('DB_USER'),
-        'PASSWORD': getenv('DB_PASSWORD'),
+        'NAME': getenv('POSTGRES_DB'),
+        'USER': getenv('POSTGRES_USER'),
+        'PASSWORD': getenv('POSTGRES_PASSWORD'),
         'HOST': getenv('DB_HOST'),
         'PORT': getenv('DB_PORT'),
     }
