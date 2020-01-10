@@ -3,9 +3,9 @@ version: '3.7'
 services:
   web:
     build: .
-    command: python textmap/manage.py runserver 0.0.0.0:8000
+    command: gunicorn textmap.wsgi:application --bind 0.0.0.0:8000
+#    command: python textmap/manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./:/usr/src/app/
       - /private/var/log/develop/textmap:/var/log/textmap
     ports:
       - 8000:8000
