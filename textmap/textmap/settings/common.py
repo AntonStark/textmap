@@ -115,6 +115,7 @@ MEDIA_ROOT = '/var/www/textmap/media/'
 
 MEDIA_URL = ''
 
+LOG_DIR = os.getenv('LOG_DIR', '/var/log/develop/textmap')
 
 LOGGING = {
     'version': 1,
@@ -130,13 +131,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/develop/textmap/errors.log',
+            'filename': os.path.join(LOG_DIR, 'errors.log'),
         },
         'debug_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'fmt',
-            'filename': '/var/log/develop/textmap/debug.log',
+            'filename': os.path.join(LOG_DIR, 'debug.log'),
         },
     },
     'loggers': {
