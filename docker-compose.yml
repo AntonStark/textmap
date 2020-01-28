@@ -4,7 +4,6 @@ services:
   textmap:
     build: .
     command: gunicorn textmap.wsgi:application --bind 0.0.0.0:8000
-#    command: python textmap/manage.py runserver 0.0.0.0:8000
     volumes:
       - /private/var/log/develop/textmap:/var/log/textmap
       - static_volume:/home/nonroot/textmap/staticfiles
@@ -14,8 +13,8 @@ services:
     env_file:
       - docker/.env.prod
     depends_on:
-      - db
-  db:
+      - postgres
+  postgres:
     image: postgres:12.1-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
