@@ -1,4 +1,4 @@
-from textmap.settings import FILE_DRIVERS, LANGUAGE_PARSERS
+from django.conf import settings
 
 
 def class_fullname(o):
@@ -10,13 +10,13 @@ def class_fullname(o):
 
 def register_file_driver(file_type: str):
     def actual_register(cls):
-        FILE_DRIVERS[file_type] = cls
+        settings.FILE_DRIVERS[file_type] = cls
         return cls
     return actual_register
 
 
 def register_language_parser(language: str):
     def actual_register(cls):
-        LANGUAGE_PARSERS[language] = cls
+        settings.LANGUAGE_PARSERS[language] = cls
         return cls
     return actual_register

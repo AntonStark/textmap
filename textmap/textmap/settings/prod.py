@@ -1,4 +1,4 @@
-import os
+from textmap.settings.common import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
@@ -22,9 +22,7 @@ DATABASES = {
     }
 }
 
-from .common import BASE_DIR
-# todo need to alter inheritance order in settings
-#  import common, set DJANGO_SETTINGS_MODULE, default textmap.textmap.settings.dev
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
