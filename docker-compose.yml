@@ -7,10 +7,10 @@ services:
 #    command: python textmap/manage.py runserver 0.0.0.0:8000
     volumes:
       - /private/var/log/develop/textmap:/var/log/textmap
-      - static_volume:/home/app/textmap/staticfiles
-      - media_volume:/home/app/textmap/mediafiles
-    ports:
-      - 8000:8000
+      - static_volume:/home/nonroot/textmap/staticfiles
+      - media_volume:/home/nonroot/textmap/mediafiles
+    expose:
+      - 8000
     env_file:
       - docker/.env.prod
     depends_on:
@@ -21,6 +21,14 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - docker/.env.prod
+  nginx:
+    build: ./docker/nginx
+    volumes:
+      - static_volume:/home/nonroot/textmap/staticfiles
+    ports:
+      - 1337:80
+    depends_on:
+      - textmap
 
 volumes:
   postgres_data:
