@@ -1,10 +1,12 @@
+import logging
 from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from rest_framework.decorators import api_view
 
 from core.models import Text, Section, Paragraph, Sentence
 from core.serializers import SentenceSerializer
-from core.views import log
+
+log = logging.getLogger(__name__)
 
 
 # STAFF

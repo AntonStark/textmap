@@ -111,10 +111,6 @@ STATICFILES_DIRS = [
 ]
 
 
-MEDIA_ROOT = '/var/www/textmap/media/'
-
-MEDIA_URL = ''
-
 LOG_DIR = os.getenv('LOG_DIR', '/var/log/develop/textmap')
 
 LOGGING = {

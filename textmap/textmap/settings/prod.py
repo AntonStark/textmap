@@ -27,3 +27,4 @@ from .common import BASE_DIR
 #  import common, set DJANGO_SETTINGS_MODULE, default textmap.textmap.settings.dev
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+MEDIA_URL = '/media/'

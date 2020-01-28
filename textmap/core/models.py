@@ -1,13 +1,15 @@
 import itertools
+import logging
 import uuid
 import re
 import typing as t
 from django.conf import settings
 from django.contrib.postgres import fields
 from django.db import models, transaction
-from os import path
 
 from core.utils import file_drivers, language_parsers
+
+log = logging.getLogger(__name__)
 
 
 def text_authors_default():
@@ -48,18 +50,24 @@ class Text(models.Model):
         driver_class = settings.FILE_DRIVERS.get(self.file_type, None)
         parser_class = settings.LANGUAGE_PARSERS.get(self.language, None)
         if not driver_class:
-            return  # todo error msg should be
+            log.error(f'driver_class not found for file_type={self.file_type}')
+            return
         elif not parser_class:
+            log.error(f'parser_class not found for language={self.language}')
             return
         else:
             driver: file_drivers.AbstractFileDriver = driver_class()
             parser: language_parsers.AbstractLanguageParser = parser_class()
+            log.debug(f'driver and parser ok')
 
         Paragraph.objects.filter(section__text=self).delete()
-        with open(path.join(settings.MEDIA_ROOT, self.file_path.path), 'r') as tf:
-            par_seq = driver.paragraph_sequence(tf)
-            paragraphs_sentences = parser.parse(par_seq)
-            Paragraph.save_sequence(paragraphs_sentences, self.root_section)
+        try:
+            with open(self.file_path.path, 'r') as tf:
+                par_seq = driver.paragraph_sequence(tf)
+                paragraphs_sentences = parser.parse(par_seq)
+                Paragraph.save_sequence(paragraphs_sentences, self.root_section)
+        except OSError:
+            log.error(f'file error with path={self.file_path.path}')
 
     def collect_sections(self):
         return Section.of_text(self.uid)

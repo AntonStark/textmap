@@ -21,3 +21,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', 5432),
     }
 }
+
+MEDIA_ROOT = os.getenv('MEDIA_ROOT', '/var/www/textmap/media/')
+MEDIA_URL = ''
