@@ -10,11 +10,16 @@ RUN pip install --upgrade pip
 ENV USER=nonroot
 ENV HOME=/home/${USER}
 ENV APP_ROOT=${HOME}/textmap
+ENV LOG_DIR=/var/log/textmap
 
 # create directory for the app user
 RUN addgroup -S ${USER} && adduser -S ${USER} -G ${USER}
 RUN mkdir -p ${HOME}
 RUN chown -R ${USER}:${USER} ${HOME}
+
+# create directory for logs
+RUN mkdir -p ${LOG_DIR}
+RUN chown -R ${USER}:${USER} ${LOG_DIR}
 
 # only stub to correspond with non docker development environment
 RUN mkdir -p /var/www/textmap/static/
