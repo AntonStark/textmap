@@ -1,10 +1,14 @@
+from django.contrib import admin
 from django.shortcuts import redirect
-from django.urls import path
+from django.urls import include, path
 
 from core import api_views
 from core import views
 
 urlpatterns = [
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('admin/', admin.site.urls),
+
     path('action/', views.register_action, name='register_action'),
     path('texts/', views.user_home, name='user_home'),
     path('', lambda request: redirect('user_home', permanent=True)),

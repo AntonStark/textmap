@@ -84,7 +84,7 @@ AUTH_USER_MODEL = 'auth.User'
 
 SESSION_MODEL = 'sessions.Session'
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = '/textmap/accounts/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
