@@ -24,3 +24,4 @@ DATABASES = {
 
 MEDIA_ROOT = os.getenv('MEDIA_ROOT', '/var/www/textmap/media/')
 MEDIA_URL = ''
+STATIC_URL = '/textmap/static/'

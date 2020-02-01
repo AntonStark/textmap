@@ -26,6 +26,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/textmap/static/'
 
 # fixme
 # SESSION_COOKIE_SECURE = True
